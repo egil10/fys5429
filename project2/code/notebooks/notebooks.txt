@@ -1,0 +1,2 @@
+Notebooks folder for Project 2
+Place Jupyter notebooks here.

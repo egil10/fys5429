@@ -1,0 +1,2 @@
+Scripts folder for Project 2
+Place Python scripts and utilities here.
