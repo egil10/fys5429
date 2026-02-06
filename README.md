@@ -1,37 +1,26 @@
 # FYS5429 - Advanced Machine Learning and Data Analysis for the Physical Sciences
 
-**Where Deep Learning Meets Scientific Discovery**
+**Physics-Informed Neural Networks for Option Pricing**
 
 ---
 
-## Course Overview
+## Project Overview
 
-This course explores the cutting edge of artificial intelligence and machine learning methods with broad applicability in scientific research. From computational neuroscience to high-energy physics experiments, we apply advanced techniques that facilitate scientific discoveries and real-world applications.
-
-The curriculum spans supervised and unsupervised learning methods, various deep learning architectures, Bayesian modeling, and sophisticated optimization techniques - all applied to complex physical and life science problems.
+This repository contains coursework for FYS5429, focusing on the application of Physics-Informed Neural Networks (PINNs) to solve partial differential equations arising in quantitative finance. The primary objective is to develop and analyze PINN-based solvers for option pricing models, progressing from the classical Black-Scholes equation to the more complex Heston stochastic volatility model.
 
 ---
 
-## Projects
+## Project Focus: PINNs for Option Pricing
 
-| Project | Focus Area | Status |
-|---------|------------|--------|
-| Project 1 | TBD | Not Started |
-| Project 2 | TBD | Not Started |
+**From Black-Scholes to Stochastic Volatility Calibration**
 
----
+This project explores how deep learning can be combined with domain knowledge from mathematical finance to solve and calibrate option pricing PDEs:
 
-## Learning Objectives
+- **Black-Scholes PINN**: Solving the classical Black-Scholes PDE using physics-informed loss functions that encode the governing equation, boundary conditions, and terminal payoff.
 
-After completing this course, you will:
+- **Heston PINN**: Extending the methodology to the Heston model, which captures stochastic volatility dynamics through a system of coupled PDEs.
 
-- Be familiar with central deep learning methods and their application in actual research
-- Master advanced regression algorithms for complex data analysis
-- Understand simulation of complex physical processes with many degrees of freedom
-- Comprehend optimization techniques and their fundamental role in machine learning
-- Apply Bayesian statistics and Bayesian Machine Learning
-- Find correlations in data sets and quantify uncertainties
-- Utilize Gaussian processes in the analysis of physics problems
+- **Model Calibration**: Using PINNs for the inverse problem of calibrating model parameters to observed market data.
 
 ---
 
@@ -41,48 +30,70 @@ After completing this course, you will:
 fys5429/
 |
 |-- README.md
+|-- FYS5429 - PINNs for Option Pricing [...].pdf
 |
-|-- project1/
-|   |-- project1.txt
-|   |-- code/
-|       |-- data/
-|       |   |-- data.txt
-|       |-- notebooks/
-|       |   |-- notebooks.txt
-|       |-- plots/
-|       |   |-- plots.txt
-|       |-- scripts/
-|           |-- scripts.txt
-|
-|-- project2/
-    |-- project2.txt
-    |-- code/
-        |-- data/
-        |   |-- data.txt
-        |-- notebooks/
-        |   |-- notebooks.txt
-        |-- plots/
-        |   |-- plots.txt
-        |-- scripts/
-            |-- scripts.txt
+|-- code/
+    |-- data/
+    |   |-- [training and validation datasets]
+    |
+    |-- notebooks/
+    |   |-- [Jupyter notebooks for analysis and visualization]
+    |
+    |-- plots/
+    |   |-- [generated figures and results]
+    |
+    |-- scripts/
+        |-- data_simulation.py      # Synthetic data generation (GBM, Heston paths)
+        |-- pinn_black_scholes.py   # PINN implementation for Black-Scholes
+        |-- pinn_heston.py          # PINN implementation for Heston model
+        |-- calibration.py          # Model calibration utilities
+        |-- utils.py                # Plotting, I/O, and helper functions
+        |-- run.py                  # Main entry point and experiment runner
 ```
+
+---
+
+## Methodology
+
+### Physics-Informed Neural Networks
+
+PINNs incorporate physical laws directly into the neural network training process by adding PDE residual terms to the loss function. For option pricing:
+
+1. **Forward Problem**: Given model parameters, solve for option prices across the (S, t) domain
+2. **Inverse Problem**: Given observed option prices, calibrate model parameters
+
+### Models Implemented
+
+| Model | PDE Type | Key Features |
+|-------|----------|--------------|
+| Black-Scholes | Parabolic PDE | Constant volatility, closed-form benchmark |
+| Heston | Coupled PDE system | Stochastic volatility, mean-reversion |
+
+---
+
+## Learning Objectives
+
+- Understand the mathematical formulation of option pricing PDEs
+- Implement physics-informed loss functions encoding PDE constraints
+- Apply automatic differentiation for computing PDE residuals
+- Compare PINN solutions against analytical benchmarks
+- Explore calibration as an inverse problem
 
 ---
 
 ## Prerequisites
 
-A solid background in mathematics is essential. Recommended prior courses include:
-
 - **FYS-STK4155** - Applied Data Analysis and Machine Learning
-- **IN5400** - Machine Learning for Image Analysis
+- Strong background in calculus and differential equations
+- Familiarity with Python and deep learning frameworks (PyTorch/TensorFlow)
 
 ---
 
 ## Resources
 
 - [Course Page - University of Oslo](https://www.uio.no/studier/emner/matnat/fys/FYS5429/)
+- [Physics-Informed Neural Networks - Raissi et al.](https://www.sciencedirect.com/science/article/pii/S0021999118307125)
 - [Applied Data Analysis and Machine Learning - FYS-STK4155](https://www.uio.no/studier/emner/matnat/fys/FYS-STK4155/)
-- [Machine Learning for Image Analysis - IN5400](https://www.uio.no/studier/emner/matnat/ifi/IN5400/)
 
 ---
 
@@ -92,12 +103,11 @@ A solid background in mathematics is essential. Recommended prior courses includ
 - **Level:** Master
 - **Teaching:** Spring semester
 - **Language:** English
-- **Capacity:** 20 students
 
 ---
 
 > *"The goal is to turn data into information, and information into insight."*
-> 
+>
 > -- Carly Fiorina
 
 ---
