@@ -1,0 +1,22 @@
+# Core scientific computing
+numpy
+scipy
+matplotlib
+
+# Deep learning
+torch
+
+# Jupyter
+jupyter
+ipykernel
+
+# Data handling
+pandas
+
+# ML utilities
+scikit-learn
+tqdm
+
+# Visualization
+seaborn
+plotly

@@ -1,0 +1,19 @@
+# Virtual environments
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+code/data/
+
+# Plots (PDF only)
+code/plots/*.png

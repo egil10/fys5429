@@ -1,2 +1,0 @@
-Plots folder for Project 1
-Place generated visualizations and figures here.

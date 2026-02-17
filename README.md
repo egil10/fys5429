@@ -30,25 +30,26 @@ This project explores how deep learning can be combined with domain knowledge fr
 fys5429/
 |
 |-- README.md
+|-- requirements.txt
+|-- .gitignore
 |-- FYS5429 - PINNs for Option Pricing [...].pdf
 |
 |-- code/
-    |-- data/
-    |   |-- [training and validation datasets]
-    |
-    |-- notebooks/
-    |   |-- [Jupyter notebooks for analysis and visualization]
-    |
-    |-- plots/
-    |   |-- [generated figures and results]
+    |-- data/                       # Training and validation datasets (gitignored)
+    |-- notebooks/                  # Jupyter notebooks for analysis
+    |-- plots/                      # Generated figures (PDF only)
     |
     |-- scripts/
-        |-- data_simulation.py      # Synthetic data generation (GBM, Heston paths)
-        |-- pinn_black_scholes.py   # PINN implementation for Black-Scholes
-        |-- pinn_heston.py          # PINN implementation for Heston model
-        |-- calibration.py          # Model calibration utilities
-        |-- utils.py                # Plotting, I/O, and helper functions
-        |-- run.py                  # Main entry point and experiment runner
+    |   |-- data_simulation.py      # Synthetic data generation (GBM, Heston paths)
+    |   |-- pinn_black_scholes.py   # PINN implementation for Black-Scholes
+    |   |-- pinn_heston.py          # PINN implementation for Heston model
+    |   |-- calibration.py          # Model calibration utilities
+    |   |-- utils.py                # Plotting, I/O, and helper functions
+    |   |-- run.py                  # Main entry point and experiment runner
+    |
+    |-- books/
+        |-- raschka/                # Notes from Raschka ML book
+        |-- goodfellow/             # Notes from Goodfellow DL book
 ```
 
 ---

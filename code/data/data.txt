@@ -1,2 +1,0 @@
-Data folder for Project 1
-Place datasets and data files here.
