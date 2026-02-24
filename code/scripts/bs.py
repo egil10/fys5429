@@ -78,8 +78,8 @@ def iv(price, S, K, T, r, cp="call", tol=1e-8, maxiter=200):
     sig = 0.25
     pricer = call if cp == "call" else put
     for _ in range(maxiter):
-        p = float(pricer(np.atleast_1d(S), K, np.atleast_1d(T), r, sig))
-        v = float(vega(np.atleast_1d(S), K, np.atleast_1d(T), r, sig))
+        p = pricer(S, K, T, r, sig)
+        v = vega(S, K, T, r, sig)
         if abs(v) < 1e-14:
             return np.nan
         sig -= (p - price) / v
@@ -115,14 +115,14 @@ if __name__ == "__main__":
     K, r, sig = 100.0, 0.05, 0.20
     S0, T0 = 100.0, 1.0
 
-    c = float(call(np.array([S0]), K, np.array([T0]), r, sig))
-    p = float(put(np.array([S0]), K, np.array([T0]), r, sig))
+    c = call(S0, K, T0, r, sig)
+    p = put(S0, K, T0, r, sig)
     print(f"Call: {c:.4f}   Put: {p:.4f}")
     print(f"Put-call parity: C-P={c-p:.4f}, S-Ke^(-rT)={S0 - K*np.exp(-r*T0):.4f}")
 
-    dc = float(delta(np.array([S0]), K, np.array([T0]), r, sig))
-    g  = float(gamma(np.array([S0]), K, np.array([T0]), r, sig))
-    v  = float(vega(np.array([S0]), K, np.array([T0]), r, sig))
+    dc = delta(S0, K, T0, r, sig)
+    g  = gamma(S0, K, T0, r, sig)
+    v  = vega(S0, K, T0, r, sig)
     print(f"\nDelta={dc:.4f}  Gamma={g:.4f}  Vega={v:.4f}")
 
     surf = surface()
