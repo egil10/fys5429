@@ -1,19 +1,32 @@
 # Virtual environments
 .venv/
 
-# Python
+# Python cache / bytecode
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
 
 # Jupyter
 .ipynb_checkpoints/
 
+# IDE / tools
+.cursor/
+.antigravity/
+.vscode/
+.idea/
+*.swp
+*.swo
+
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Data
 code/data/
 
-# Plots (PDF only)
-code/plots/*.png
+# Plots — keep PDFs, ignore PNGs
+*.png
