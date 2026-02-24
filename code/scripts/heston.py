@@ -102,16 +102,20 @@ def call_cos(S, K, T, r, v0, kappa, theta, xi, rho, N=256):
 def surface(S_min=50, S_max=150, T_min=0.05, T_max=2.0,
             nS=40, nT=40, K=100, r=0.05,
             v0=0.04, kappa=2.0, theta=0.04, xi=0.3, rho=-0.7,
-            cp="call"):
-    """Generate V(S,T) grid. Keep nS, nT moderate (~40)."""
+            cp="call", n_jobs=-1):
+    """Generate V(S,T) grid. Uses joblib for parallel pricing."""
+    from joblib import Parallel, delayed
+
     Sv = np.linspace(S_min, S_max, nS)
     Tv = np.linspace(T_min, T_max, nT)
     Sg, Tg = np.meshgrid(Sv, Tv, indexing="ij")
-    flat = np.array([
-        call(float(s), K, float(t), r, v0, kappa, theta, xi, rho)
-        for s, t in zip(Sg.ravel(), Tg.ravel())
-    ])
-    V = flat.reshape(Sg.shape)
+
+    pairs = list(zip(Sg.ravel(), Tg.ravel()))
+    flat = Parallel(n_jobs=n_jobs)(
+        delayed(call)(float(s), K, float(t), r, v0, kappa, theta, xi, rho)
+        for s, t in pairs
+    )
+    V = np.array(flat).reshape(Sg.shape)
     if cp == "put":
         V = V - Sg + K * np.exp(-r * Tg)
     return {"S": Sg, "T": Tg, "V": V,

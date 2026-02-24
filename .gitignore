@@ -25,8 +25,11 @@ build/
 Thumbs.db
 desktop.ini
 
-# Data
-code/data/
+# Data — ignore raw/processed (large external files), keep generated
+code/data/raw/**
+!code/data/raw/README.md
+code/data/processed/**
+!code/data/processed/README.md
 
 # Plots — keep PDFs, ignore PNGs
 *.png
