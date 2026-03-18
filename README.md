@@ -1,26 +1,22 @@
-# FYS5429 - Advanced Machine Learning and Data Analysis for the Physical Sciences
+# FYS5429 — Physics-Informed Neural Networks for Option Pricing
 
-**Physics-Informed Neural Networks for Option Pricing**
-
----
-
-## Project Overview
-
-This repository contains coursework for FYS5429, focusing on the application of Physics-Informed Neural Networks (PINNs) to solve partial differential equations arising in quantitative finance. The primary objective is to develop and analyze PINN-based solvers for option pricing models, progressing from the classical Black-Scholes equation to the more complex Heston stochastic volatility model.
+**Advanced Machine Learning and Data Analysis for the Physical Sciences**
+University of Oslo, Spring 2026
 
 ---
 
-## Project Focus: PINNs for Option Pricing
+## Overview
 
-**From Black-Scholes to Stochastic Volatility Calibration**
+This project applies Physics-Informed Neural Networks (PINNs) to option pricing in quantitative finance. PINNs embed the governing PDE directly into the loss function, enabling the network to learn solutions that are consistent with the underlying financial mathematics — without requiring large labeled datasets.
 
-This project explores how deep learning can be combined with domain knowledge from mathematical finance to solve and calibrate option pricing PDEs:
+The project progresses through two pricing models:
 
-- **Black-Scholes PINN**: Solving the classical Black-Scholes PDE using physics-informed loss functions that encode the governing equation, boundary conditions, and terminal payoff.
+| Model | PDE | Highlights |
+|-------|-----|------------|
+| **Black-Scholes** | Parabolic PDE | Constant volatility, closed-form benchmark available |
+| **Heston** | Coupled PDE system | Stochastic volatility with mean-reversion |
 
-- **Heston PINN**: Extending the methodology to the Heston model, which captures stochastic volatility dynamics through a system of coupled PDEs.
-
-- **Model Calibration**: Using PINNs for the inverse problem of calibrating model parameters to observed market data.
+Both the **forward problem** (pricing given parameters) and the **inverse problem** (calibrating parameters from market prices) are explored.
 
 ---
 
@@ -28,88 +24,92 @@ This project explores how deep learning can be combined with domain knowledge fr
 
 ```
 fys5429/
-|
-|-- README.md
-|-- requirements.txt
-|-- .gitignore
-|-- FYS5429 - PINNs for Option Pricing [...].pdf
-|
-|-- code/
-    |-- data/                       # Training and validation datasets (gitignored)
-    |-- notebooks/                  # Jupyter notebooks for analysis
-    |-- plots/                      # Generated figures (PDF only)
-    |
-    |-- scripts/
-    |   |-- data_simulation.py      # Synthetic data generation (GBM, Heston paths)
-    |   |-- pinn_black_scholes.py   # PINN implementation for Black-Scholes
-    |   |-- pinn_heston.py          # PINN implementation for Heston model
-    |   |-- calibration.py          # Model calibration utilities
-    |   |-- utils.py                # Plotting, I/O, and helper functions
-    |   |-- run.py                  # Main entry point and experiment runner
-    |
-    |-- books/
-        |-- raschka/                # Notes from Raschka ML book
-        |-- goodfellow/             # Notes from Goodfellow DL book
+├── README.md
+├── requirements.txt
+├── FYS5429 - PINNs for Option Pricing.pdf   # Project report
+│
+└── code/
+    ├── scripts/
+    │   ├── run.py            # Main entry point — trains and evaluates models
+    │   ├── pinn-bs.py        # PINN solver for the Black-Scholes PDE
+    │   ├── pinn-heston.py    # PINN solver for the Heston model
+    │   ├── bs.py             # Analytical Black-Scholes reference solution
+    │   ├── heston.py         # Heston model utilities
+    │   ├── generate.py       # Synthetic data generation (GBM / Heston paths)
+    │   ├── calibrate.py      # Inverse problem: parameter calibration
+    │   └── utils.py          # Shared helpers (plotting, I/O, seeding)
+    │
+    ├── notebooks/            # Exploratory analysis and result visualisation
+    ├── plots/                # Generated figures (PDF)
+    ├── data/                 # Training / validation data (git-ignored)
+    └── rsc/                  # Project proposal and supplementary resources
 ```
 
 ---
 
-## Methodology
+## Getting Started
 
-### Physics-Informed Neural Networks
+### Install dependencies
 
-PINNs incorporate physical laws directly into the neural network training process by adding PDE residual terms to the loss function. For option pricing:
+```bash
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
 
-1. **Forward Problem**: Given model parameters, solve for option prices across the (S, t) domain
-2. **Inverse Problem**: Given observed option prices, calibrate model parameters
+### Run experiments
 
-### Models Implemented
+```bash
+cd code/scripts
 
-| Model | PDE Type | Key Features |
-|-------|----------|--------------|
-| Black-Scholes | Parabolic PDE | Constant volatility, closed-form benchmark |
-| Heston | Coupled PDE system | Stochastic volatility, mean-reversion |
+# Train the Black-Scholes PINN
+python run.py --model bs
+
+# Train the Heston PINN
+python run.py --model heston
+
+# Set a custom random seed
+python run.py --model bs --seed 123
+```
 
 ---
 
-## Learning Objectives
+## Method
 
-- Understand the mathematical formulation of option pricing PDEs
-- Implement physics-informed loss functions encoding PDE constraints
-- Apply automatic differentiation for computing PDE residuals
-- Compare PINN solutions against analytical benchmarks
-- Explore calibration as an inverse problem
+### PINN Loss Function
+
+The network is trained to minimise a composite loss:
+
+```
+L = λ_pde · L_pde  +  λ_bc · L_bc  +  λ_ic · L_ic
+```
+
+- **L_pde** — residual of the Black-Scholes / Heston PDE at collocation points, computed via automatic differentiation
+- **L_bc** — boundary conditions (e.g. option payoff at expiry, put-call parity at domain edges)
+- **L_ic** — initial/terminal condition (payoff at maturity)
+
+PDE gradients are obtained via PyTorch autograd — no finite-difference approximations.
+
+### Calibration (Inverse Problem)
+
+`calibrate.py` treats model parameters (e.g. σ for Black-Scholes, κ, θ, ξ, ρ for Heston) as trainable variables and fits them by minimising the difference between PINN-predicted prices and observed market quotes.
 
 ---
 
 ## Prerequisites
 
-- **FYS-STK4155** - Applied Data Analysis and Machine Learning
-- Strong background in calculus and differential equations
-- Familiarity with Python and deep learning frameworks (PyTorch/TensorFlow)
+- Completed **FYS-STK4155** (Applied Data Analysis and Machine Learning) or equivalent
+- Comfort with PDEs and stochastic calculus
+- Python with PyTorch
 
 ---
 
-## Resources
+## Key References
 
-- [Course Page - University of Oslo](https://www.uio.no/studier/emner/matnat/fys/FYS5429/)
-- [Physics-Informed Neural Networks - Raissi et al.](https://www.sciencedirect.com/science/article/pii/S0021999118307125)
-- [Applied Data Analysis and Machine Learning - FYS-STK4155](https://www.uio.no/studier/emner/matnat/fys/FYS-STK4155/)
-
----
-
-## Course Information
-
-- **Credits:** 10
-- **Level:** Master
-- **Teaching:** Spring semester
-- **Language:** English
-
----
-
-> *"The goal is to turn data into information, and information into insight."*
->
-> -- Carly Fiorina
+- Raissi, Perdikaris & Karniadakis (2019) — [Physics-informed neural networks](https://www.sciencedirect.com/science/article/pii/S0021999118307125)
+- Black & Scholes (1973) — The pricing of options and corporate liabilities
+- Heston (1993) — A closed-form solution for options with stochastic volatility
+- [FYS5429 course page](https://www.uio.no/studier/emner/matnat/fys/FYS5429/)
 
 ---
 
