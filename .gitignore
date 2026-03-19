@@ -8,6 +8,11 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -33,3 +38,22 @@ code/data/processed/**
 
 # Plots — keep PDFs, ignore PNGs
 *.png
+
+# Articles and references
+.article/
+
+# R files and history
+.Rhistory
+.RData
+.Rapp.history
+.Ruserdata
+.Rproj.user/
+
+# General Temp and Cache files
+.cache/
+*.log
+*.tmp
+*.temp
+*~
+*.bak
+
