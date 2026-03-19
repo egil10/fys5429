@@ -36,7 +36,7 @@ def summary(pred, exact, label="") -> dict:
 
     Args:
         pred, exact: arrays of the same shape
-        label: printed header (empty → no print)
+        label: printed header (empty = no print)
 
     Returns:
         dict with keys rmse, mae, mape, rel_l2, max_err
@@ -49,11 +49,11 @@ def summary(pred, exact, label="") -> dict:
         max_err= max_err(pred, exact),
     )
     if label:
-        print(f"\n{'─'*40}")
+        print(f"\n{'-'*40}")
         print(f"  {label}")
-        print(f"{'─'*40}")
+        print(f"{'-'*40}")
         for k, v in m.items():
             unit = "%" if k == "mape" else ""
             print(f"  {k:<10} {v:.6f}{unit}")
-        print(f"{'─'*40}")
+        print(f"{'-'*40}")
     return m

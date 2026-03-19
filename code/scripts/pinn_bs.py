@@ -2,12 +2,13 @@
 -----------
 PINN solver for the Black-Scholes PDE.
 
-  PDE (τ = T−t):  ∂V/∂τ = ½σ²S²·V_SS + rS·V_S − rV
-  IC  (τ = 0):    V(S,0) = max(S−K, 0)
-  BC  lower:      V(S→0, τ) = 0
-  BC  upper:      V(S_max, τ) ≈ S_max − K·e^{−rτ}
+  PDE (tau = T-t):  dV/dtau = 0.5*sig^2*S^2*V_SS + r*S*V_S - r*V
+  IC  (tau = 0):    V(S,0) = max(S-K, 0)
+  BC  lower:        V(S->0, tau) = 0
+  BC  upper:        V(S_max, tau) ~= S_max - K*exp(-r*tau)
 
-  Loss:  L = λ_pde·L_pde + λ_ic·L_ic + λ_bc·L_bc
+  Network predicts u = V/K (dimensionless), so all targets are O(1).
+  Loss:  L = lam_pde*L_pde + lam_ic*L_ic + lam_bc*L_bc
 """
 
 import numpy as np
@@ -58,18 +59,18 @@ class BSPINN:
     # ── forward ──────────────────────────────────────────────────────────────
 
     def _fwd(self, S, tau):
-        """V(S, τ) — raw network pass."""
+        """u(S, tau) = V/K — dimensionless network output."""
         return self.net(torch.stack([S / self.K, tau], dim=1)).squeeze(-1)
 
     def _residual(self, S, tau):
-        """BS PDE residual."""
+        """BS PDE residual in u = V/K units (so O(1) magnitude)."""
         S.requires_grad_(True)
         tau.requires_grad_(True)
-        V = self._fwd(S, tau)
-        (V_tau,) = torch.autograd.grad(V.sum(), tau, create_graph=True)
-        (V_S,)   = torch.autograd.grad(V.sum(), S,   create_graph=True)
-        (V_SS,)  = torch.autograd.grad(V_S.sum(), S, create_graph=True)
-        return V_tau - 0.5 * self.sig**2 * S**2 * V_SS - self.r * S * V_S + self.r * V
+        u = self._fwd(S, tau)
+        (u_tau,) = torch.autograd.grad(u.sum(), tau, create_graph=True)
+        (u_S,)   = torch.autograd.grad(u.sum(), S,   create_graph=True)
+        (u_SS,)  = torch.autograd.grad(u_S.sum(), S, create_graph=True)
+        return u_tau - 0.5 * self.sig**2 * S**2 * u_SS - self.r * S * u_S + self.r * u
 
     # ── training ─────────────────────────────────────────────────────────────
 
@@ -86,22 +87,22 @@ class BSPINN:
         def rT(n): return torch.rand(n, device=dev) * tau_max
 
         for step in range(1, n_steps + 1):
-            # PDE interior
+            # PDE interior (u = V/K, so PDE residual is dimensionless)
             l_pde = self._residual(rS(n_col), rT(n_col)).pow(2).mean()
 
-            # IC: V(S, 0) = max(S − K, 0)
+            # IC: u(S, 0) = max(S/K - 1, 0)
             S_ic = rS(n_ic)
             l_ic = (self._fwd(S_ic, torch.zeros(n_ic, device=dev))
-                    - (S_ic - self.K).clamp(min=0)).pow(2).mean()
+                    - (S_ic / self.K - 1.0).clamp(min=0)).pow(2).mean()
 
-            # BC lower: V(S_min, τ) ≈ 0
+            # BC lower: u(S_min, tau) ~= 0
             tau_bc = rT(n_bc)
             l_bc   = self._fwd(torch.full((n_bc,), S_min, device=dev), tau_bc).pow(2).mean()
 
-            # BC upper: V(S_max, τ) ≈ S_max − K·e^{−rτ}
+            # BC upper: u(S_max, tau) ~= S_max/K - exp(-r*tau)
             S_hi = torch.full((n_bc,), S_max, device=dev)
             l_bc = l_bc + (self._fwd(S_hi, tau_bc)
-                           - (S_hi - self.K * torch.exp(-self.r * tau_bc))).pow(2).mean()
+                           - (S_hi / self.K - torch.exp(-self.r * tau_bc))).pow(2).mean()
 
             loss = self.lam[0] * l_pde + self.lam[1] * l_ic + self.lam[2] * l_bc
             opt.zero_grad()
@@ -122,12 +123,12 @@ class BSPINN:
     # ── inference ────────────────────────────────────────────────────────────
 
     def predict(self, S, tau):
-        """V(S, τ) — arrays or scalars → numpy array."""
+        """V(S, tau) — arrays or scalars -> numpy array (rescaled by K)."""
         self.net.eval()
         with torch.no_grad():
-            S_t   = torch.as_tensor(np.asarray(S,   float), dtype=torch.float32, device=self.device).flatten()
-            tau_t = torch.as_tensor(np.asarray(tau, float), dtype=torch.float32, device=self.device).flatten()
-            V = self._fwd(S_t, tau_t)
+            S_t   = torch.tensor(np.asarray(S,   float).copy(), dtype=torch.float32, device=self.device).flatten()
+            tau_t = torch.tensor(np.asarray(tau, float).copy(), dtype=torch.float32, device=self.device).flatten()
+            V = self._fwd(S_t, tau_t) * self.K  # rescale u -> V
         self.net.train()
         return V.cpu().numpy()
 
