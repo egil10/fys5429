@@ -44,6 +44,9 @@ code/data/processed/**
 # Articles and references
 .article/
 
+# Claude Code context (local only)
+CLAUDE.md
+
 # R files and history
 .Rhistory
 .RData
