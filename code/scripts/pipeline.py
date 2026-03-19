@@ -14,6 +14,7 @@ End-to-end BS PINN pipeline.
 import argparse
 from pathlib import Path
 
+import torch  # must load before numpy on Windows (DLL order)
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
