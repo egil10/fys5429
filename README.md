@@ -1,80 +1,63 @@
 # FYS5429 — PINNs for Option Pricing
 
-Physics-Informed Neural Networks applied to the Black-Scholes and Heston PDEs.
+*Can a neural network learn to price options by understanding the physics?*
+
 University of Oslo · Spring 2026 · Egil Furnes
 
 ---
 
-## What this is
+## The idea
 
-Standard neural networks learn from data. PINNs also satisfy a PDE — the governing equation is baked directly into the loss function via automatic differentiation.
+Option pricing is a PDE problem. The Black-Scholes equation is structurally identical to the heat equation — a fact Fischer Black and Myron Scholes exploited in 1973 to derive their celebrated closed form. Heston's 1993 extension adds a second stochastic dimension for volatility, breaking the closed form but preserving the PDE structure.
 
-This project uses PINNs to price European options under two models:
-
-| Model | PDE | Status |
-|---|---|---|
-| Black-Scholes | Parabolic, 1D | Phase 1 — in progress |
-| Heston | Coupled, 2D (S, v) | Phase 3 — pending |
-
-Both the **forward problem** (price given params) and the **inverse problem** (calibrate params from prices) are covered.
+Physics-Informed Neural Networks (PINNs) turn this into a learning problem: instead of discretising the domain on a mesh, a neural network is trained to satisfy the PDE everywhere simultaneously. The PDE residual — computed via automatic differentiation — enters directly into the loss function. No labelled data required.
 
 ---
 
-## Structure
+## Why it's interesting
 
-```
-code/scripts/
-  bs.py           analytical Black-Scholes (pricing + Greeks)
-  heston.py       semi-analytical Heston (CF integration + COS)
-  generate.py     synthetic data generation
-  pinn_bs.py      PINN solver — Black-Scholes
-  pinn_heston.py  PINN solver — Heston
-  calibrate.py    parameter calibration (inverse problem)
-  greeks.py       Greeks: analytical, numerical FD, PINN
-  metrics.py      RMSE, MAE, MAPE, rel-L2, max error
-  style.py        matplotlib style + colour palette
-  utils.py        seeding, plotting, model I/O
-  run.py          experiment entry point
-```
+**It connects two fields.** Financial PDEs and deep learning rarely meet this cleanly. The Black-Scholes equation under a log-price change *is* a diffusion equation — the same one that governs heat flow, Brownian motion, and quantum mechanics in imaginary time.
+
+**The inverse problem is the real prize.** Markets give you prices, not parameters. Calibrating the Heston model — recovering κ, θ, ξ, ρ from observed option prices — is an ill-posed nonlinear optimisation problem. A PINN that has internalised the Heston PDE can be repurposed as a differentiable pricer, making gradient-based calibration natural.
+
+**Mesh-free scales.** Classical finite-difference methods on a 2D (S, v) grid are expensive. PINNs sample collocation points randomly and scale to higher dimensions without a grid — relevant for multi-asset and path-dependent extensions.
+
+**Activation functions matter.** The smoothness of the solution — and the sharpness of the terminal payoff — make the choice of activation non-trivial. This project benchmarks tanh, Swish, GELU, Softplus, and SIREN against each other.
 
 ---
 
-## Quickstart
+## The models
 
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+**Black-Scholes** (Phase 1)
 
-cd code/scripts
+$$\frac{\partial V}{\partial \tau} = \frac{1}{2}\sigma^2 S^2 \frac{\partial^2 V}{\partial S^2} + rS\frac{\partial V}{\partial S} - rV, \qquad \tau = T - t$$
 
-python run.py --model bs --steps 5000        # train BS PINN
-python pinn_bs.py                            # demo with plots
-python greeks.py                             # plot all BS Greeks
-python bs.py                                 # analytical surface
-```
+Closed-form solution available — used as ground truth to validate the PINN.
+
+**Heston** (Phase 3)
+
+$$\frac{\partial V}{\partial \tau} = \frac{1}{2}vS^2 V_{SS} + \rho\xi v S\, V_{Sv} + \frac{1}{2}\xi^2 v\, V_{vv} + rS\, V_S + \kappa(\theta - v)\, V_v - rV$$
+
+Five parameters: mean-reversion speed κ, long-run variance θ, vol-of-vol ξ, spot-vol correlation ρ, initial variance v₀. No closed form — numerical integration (characteristic functions) serves as benchmark.
 
 ---
 
-## PINN loss
+## Loss function
 
-```
-L = λ_pde · L_pde  +  λ_ic · L_ic  +  λ_bc · L_bc
-```
+$$\mathcal{L} = \lambda_\text{pde}\,\mathcal{L}_\text{pde} + \lambda_\text{ic}\,\mathcal{L}_\text{ic} + \lambda_\text{bc}\,\mathcal{L}_\text{bc}$$
 
-- `L_pde` — PDE residual at random collocation points (autograd)
-- `L_ic` — terminal payoff V(S, 0) = max(S − K, 0)
-- `L_bc` — boundary conditions at S = 0 and S = S_max
+All three terms computed via PyTorch autograd — no finite differences anywhere in the training loop.
 
 ---
 
 ## Roadmap
 
-| Phase | Deadline | Goal |
+| Phase | Deadline | |
 |---|---|---|
-| 1 | Apr 4 | BS PINN — validate against analytical solution |
-| 2 | Apr 18 | Activation study: tanh, Swish, GELU, Softplus, SIREN |
-| 3 | May 9 | Heston PINN (2D PDE, mixed derivative) |
-| 4 | May 23 | Heston calibration (inverse problem) |
+| 1 | Apr 4 | BS PINN — validate against closed-form solution |
+| 2 | Apr 18 | Activation study: tanh · Swish · GELU · Softplus · SIREN |
+| 3 | May 9 | Heston PINN — 2D PDE, mixed derivative |
+| 4 | May 23 | Inverse problem — Heston calibration from prices |
 | 5 | Jun 1 | Write-up and submission |
 
 ---
