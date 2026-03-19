@@ -4,7 +4,7 @@
 
 University of Oslo · Spring 2026 · Egil Furnes
 
----
+<br>
 
 ## The idea
 
@@ -12,7 +12,7 @@ Option pricing is a PDE problem. The Black-Scholes equation is structurally iden
 
 Physics-Informed Neural Networks (PINNs) turn this into a learning problem: instead of discretising the domain on a mesh, a neural network is trained to satisfy the PDE everywhere simultaneously. The PDE residual — computed via automatic differentiation — enters directly into the loss function. No labelled data required.
 
----
+<br>
 
 ## Why it's interesting
 
@@ -24,23 +24,23 @@ Physics-Informed Neural Networks (PINNs) turn this into a learning problem: inst
 
 **Activation functions matter.** The smoothness of the solution — and the sharpness of the terminal payoff — make the choice of activation non-trivial. This project benchmarks tanh, Swish, GELU, Softplus, and SIREN against each other.
 
----
+<br>
 
 ## The models
 
-**Black-Scholes** (Phase 1)
+**Black-Scholes**
 
 $$\frac{\partial V}{\partial \tau} = \frac{1}{2}\sigma^2 S^2 \frac{\partial^2 V}{\partial S^2} + rS\frac{\partial V}{\partial S} - rV, \qquad \tau = T - t$$
 
 Closed-form solution available — used as ground truth to validate the PINN.
 
-**Heston** (Phase 3)
+**Heston**
 
 $$\frac{\partial V}{\partial \tau} = \frac{1}{2}vS^2 V_{SS} + \rho\xi v S\, V_{Sv} + \frac{1}{2}\xi^2 v\, V_{vv} + rS\, V_S + \kappa(\theta - v)\, V_v - rV$$
 
 Five parameters: mean-reversion speed κ, long-run variance θ, vol-of-vol ξ, spot-vol correlation ρ, initial variance v₀. No closed form — numerical integration (characteristic functions) serves as benchmark.
 
----
+<br>
 
 ## Loss function
 
@@ -48,18 +48,6 @@ $$\mathcal{L} = \lambda_\text{pde}\,\mathcal{L}_\text{pde} + \lambda_\text{ic}\,
 
 All three terms computed via PyTorch autograd — no finite differences anywhere in the training loop.
 
----
-
-## Roadmap
-
-| Phase | Deadline | |
-|---|---|---|
-| 1 | Apr 4 | BS PINN — validate against closed-form solution |
-| 2 | Apr 18 | Activation study: tanh · Swish · GELU · Softplus · SIREN |
-| 3 | May 9 | Heston PINN — 2D PDE, mixed derivative |
-| 4 | May 23 | Inverse problem — Heston calibration from prices |
-| 5 | Jun 1 | Write-up and submission |
-
----
+<br>
 
 Department of Physics · University of Oslo
