@@ -1,116 +1,82 @@
-# FYS5429 — Physics-Informed Neural Networks for Option Pricing
+# FYS5429 — PINNs for Option Pricing
 
-**Advanced Machine Learning and Data Analysis for the Physical Sciences**
-University of Oslo, Spring 2026
-
----
-
-## Overview
-
-This project applies Physics-Informed Neural Networks (PINNs) to option pricing in quantitative finance. PINNs embed the governing PDE directly into the loss function, enabling the network to learn solutions that are consistent with the underlying financial mathematics — without requiring large labeled datasets.
-
-The project progresses through two pricing models:
-
-| Model | PDE | Highlights |
-|-------|-----|------------|
-| **Black-Scholes** | Parabolic PDE | Constant volatility, closed-form benchmark available |
-| **Heston** | Coupled PDE system | Stochastic volatility with mean-reversion |
-
-Both the **forward problem** (pricing given parameters) and the **inverse problem** (calibrating parameters from market prices) are explored.
+Physics-Informed Neural Networks applied to the Black-Scholes and Heston PDEs.
+University of Oslo · Spring 2026 · Egil Furnes
 
 ---
 
-## Repository Structure
+## What this is
+
+Standard neural networks learn from data. PINNs also satisfy a PDE — the governing equation is baked directly into the loss function via automatic differentiation.
+
+This project uses PINNs to price European options under two models:
+
+| Model | PDE | Status |
+|---|---|---|
+| Black-Scholes | Parabolic, 1D | Phase 1 — in progress |
+| Heston | Coupled, 2D (S, v) | Phase 3 — pending |
+
+Both the **forward problem** (price given params) and the **inverse problem** (calibrate params from prices) are covered.
+
+---
+
+## Structure
 
 ```
-fys5429/
-├── README.md
-├── requirements.txt
-├── FYS5429 - PINNs for Option Pricing.pdf   # Project report
-│
-└── code/
-    ├── scripts/
-    │   ├── run.py            # Main entry point — trains and evaluates models
-    │   ├── pinn-bs.py        # PINN solver for the Black-Scholes PDE
-    │   ├── pinn-heston.py    # PINN solver for the Heston model
-    │   ├── bs.py             # Analytical Black-Scholes reference solution
-    │   ├── heston.py         # Heston model utilities
-    │   ├── generate.py       # Synthetic data generation (GBM / Heston paths)
-    │   ├── calibrate.py      # Inverse problem: parameter calibration
-    │   └── utils.py          # Shared helpers (plotting, I/O, seeding)
-    │
-    ├── notebooks/            # Exploratory analysis and result visualisation
-    ├── plots/                # Generated figures (PDF)
-    ├── data/                 # Training / validation data (git-ignored)
-    └── rsc/                  # Project proposal and supplementary resources
+code/scripts/
+  bs.py           analytical Black-Scholes (pricing + Greeks)
+  heston.py       semi-analytical Heston (CF integration + COS)
+  generate.py     synthetic data generation
+  pinn_bs.py      PINN solver — Black-Scholes
+  pinn_heston.py  PINN solver — Heston
+  calibrate.py    parameter calibration (inverse problem)
+  greeks.py       Greeks: analytical, numerical FD, PINN
+  metrics.py      RMSE, MAE, MAPE, rel-L2, max error
+  style.py        matplotlib style + colour palette
+  utils.py        seeding, plotting, model I/O
+  run.py          experiment entry point
 ```
 
 ---
 
-## Getting Started
-
-### Install dependencies
+## Quickstart
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-```
 
-### Run experiments
-
-```bash
 cd code/scripts
 
-# Train the Black-Scholes PINN
-python run.py --model bs
-
-# Train the Heston PINN
-python run.py --model heston
-
-# Set a custom random seed
-python run.py --model bs --seed 123
+python run.py --model bs --steps 5000        # train BS PINN
+python pinn_bs.py                            # demo with plots
+python greeks.py                             # plot all BS Greeks
+python bs.py                                 # analytical surface
 ```
 
 ---
 
-## Method
-
-### PINN Loss Function
-
-The network is trained to minimise a composite loss:
+## PINN loss
 
 ```
-L = λ_pde · L_pde  +  λ_bc · L_bc  +  λ_ic · L_ic
+L = λ_pde · L_pde  +  λ_ic · L_ic  +  λ_bc · L_bc
 ```
 
-- **L_pde** — residual of the Black-Scholes / Heston PDE at collocation points, computed via automatic differentiation
-- **L_bc** — boundary conditions (e.g. option payoff at expiry, put-call parity at domain edges)
-- **L_ic** — initial/terminal condition (payoff at maturity)
-
-PDE gradients are obtained via PyTorch autograd — no finite-difference approximations.
-
-### Calibration (Inverse Problem)
-
-`calibrate.py` treats model parameters (e.g. σ for Black-Scholes, κ, θ, ξ, ρ for Heston) as trainable variables and fits them by minimising the difference between PINN-predicted prices and observed market quotes.
+- `L_pde` — PDE residual at random collocation points (autograd)
+- `L_ic` — terminal payoff V(S, 0) = max(S − K, 0)
+- `L_bc` — boundary conditions at S = 0 and S = S_max
 
 ---
 
-## Prerequisites
+## Roadmap
 
-- Completed **FYS-STK4155** (Applied Data Analysis and Machine Learning) or equivalent
-- Comfort with PDEs and stochastic calculus
-- Python with PyTorch
-
----
-
-## Key References
-
-- Raissi, Perdikaris & Karniadakis (2019) — [Physics-informed neural networks](https://www.sciencedirect.com/science/article/pii/S0021999118307125)
-- Black & Scholes (1973) — The pricing of options and corporate liabilities
-- Heston (1993) — A closed-form solution for options with stochastic volatility
-- [FYS5429 course page](https://www.uio.no/studier/emner/matnat/fys/FYS5429/)
+| Phase | Deadline | Goal |
+|---|---|---|
+| 1 | Apr 4 | BS PINN — validate against analytical solution |
+| 2 | Apr 18 | Activation study: tanh, Swish, GELU, Softplus, SIREN |
+| 3 | May 9 | Heston PINN (2D PDE, mixed derivative) |
+| 4 | May 23 | Heston calibration (inverse problem) |
+| 5 | Jun 1 | Write-up and submission |
 
 ---
 
-**Department of Physics, University of Oslo**
+Department of Physics · University of Oslo

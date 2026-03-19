@@ -1,39 +1,57 @@
-"""
-run.py
-------
-Main entry point for running PINN option pricing experiments.
+"""run.py
+-------
+Entry point for PINN option pricing experiments.
 
-This script orchestrates:
-- Data generation/loading
-- Model training (Black-Scholes and/or Heston)
-- Calibration
-- Results visualization
+  python run.py --model bs --steps 5000 --seed 42
 """
 
 import argparse
+import numpy as np
+from pathlib import Path
 
-from data_simulation import generate_training_data
-from pinn_black_scholes import BlackScholesPINN
-from pinn_heston import HestonPINN
-from calibration import calibrate_black_scholes, calibrate_heston
-from utils import set_seed, plot_solution
+from utils import set_seed
+
+
+def _run_bs(args):
+    from pinn_bs import BSPINN
+    from bs import call as bs_call
+    from utils import plot_loss
+
+    model = BSPINN(K=args.K, r=args.r, sig=args.sig)
+    model.train(n_steps=args.steps, log=args.log)
+
+    out = Path(__file__).parent.parent / "plots" / "pinn"
+    model.save(out / "bs_pinn.pt")
+    plot_loss(model.history, path=out / "bs_loss.pdf")
+
+    # Validation slice at τ=1
+    S    = np.linspace(50, 200, 200)
+    tau  = 1.0
+    V_nn = model.predict(S, np.full_like(S, tau))
+    V_ex = bs_call(S, args.K, tau, args.r, args.sig)
+    rmse = np.sqrt(np.mean((V_nn - V_ex) ** 2))
+    print(f"\nRMSE vs analytical (τ=1): {rmse:.6f}")
+
+
+def _run_heston(args):
+    raise NotImplementedError("Heston PINN — Phase 3 (due May 9)")
 
 
 def main():
-    """Main execution function."""
-    parser = argparse.ArgumentParser(description="PINN Option Pricing")
-    parser.add_argument("--model", type=str, default="bs", choices=["bs", "heston"],
-                        help="Model type: 'bs' for Black-Scholes, 'heston' for Heston")
-    parser.add_argument("--seed", type=int, default=42, help="Random seed")
-    args = parser.parse_args()
+    p = argparse.ArgumentParser(description="PINN option pricing")
+    p.add_argument("--model",  choices=["bs", "heston"], default="bs")
+    p.add_argument("--steps",  type=int,   default=5000)
+    p.add_argument("--seed",   type=int,   default=42)
+    p.add_argument("--log",    type=int,   default=500,   help="print every N steps")
+    p.add_argument("--K",      type=float, default=100.0, help="strike")
+    p.add_argument("--r",      type=float, default=0.05,  help="risk-free rate")
+    p.add_argument("--sig",    type=float, default=0.20,  help="volatility (BS only)")
+    args = p.parse_args()
 
     set_seed(args.seed)
+    print(f"model={args.model}  steps={args.steps}  seed={args.seed}")
 
-    print(f"Running PINN with model: {args.model}")
-    print("This is a placeholder - implementation pending")
-
-    # TODO: Implement full pipeline
-    raise NotImplementedError("Full pipeline not yet implemented")
+    {"bs": _run_bs, "heston": _run_heston}[args.model](args)
 
 
 if __name__ == "__main__":
