@@ -20,13 +20,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-import style  # noqa: applies rcParams on import
+import fys5429.style as style  # noqa: applies rcParams on import
 
-from utils   import set_seed, plot_loss
-from bs      import call as bs_call, surface as bs_surface
-from pinn_bs import BSPINN
-from metrics import summary
-from greeks  import bs_greeks, pinn_delta, pinn_gamma, compare_greeks
+from fys5429.utils   import set_seed, plot_loss
+from fys5429.bs      import call as bs_call, surface as bs_surface
+from fys5429.pinn_bs import BSPINN
+from fys5429.metrics import summary
+from fys5429.greeks  import bs_greeks, pinn_delta, pinn_gamma, compare_greeks
 
 OUT = Path(__file__).parent.parent / "plots" / "pinn"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -163,7 +163,7 @@ def plot_greeks_comparison(model, K, r, sig):
 
 def plot_all_greeks(K, r, sig):
     """All 5 BS Greeks on one panel."""
-    from greeks import plot_greeks
+    from fys5429.greeks import plot_greeks
     S = np.linspace(60, 160, 300)
     g = bs_greeks(S, K, 1.0, r, sig)
     fig, _ = plot_greeks(S, g, title="Black-Scholes Greeks  (K=100, T=1, sig=0.20)")

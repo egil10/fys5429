@@ -6,7 +6,7 @@ Greeks computation and visualisation for BS and (numerical) Heston.
   Numerical Greeks via finite differences (for PINN or Heston).
 
   Usage:
-    from greeks import bs_greeks, num_delta, plot_greeks
+    from fys5429.greeks import bs_greeks, num_delta, plot_greeks
 """
 
 import numpy as np
@@ -22,7 +22,7 @@ def bs_greeks(S, K, T, r, sig):
     Returns:
         dict with keys delta, gamma, vega, theta, rho
     """
-    from bs import delta, gamma, vega, theta, rho
+    from fys5429.bs import delta, gamma, vega, theta, rho
     return dict(
         delta = delta(S, K, T, r, sig, cp="call"),
         gamma = gamma(S, K, T, r, sig),

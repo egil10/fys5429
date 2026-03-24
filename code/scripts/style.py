@@ -2,9 +2,9 @@
 --------
 Matplotlib style configuration. Import once at the top of any script.
 
-  from style import apply; apply()
+  from fys5429.style import apply; apply()
   # or
-  import style; style.apply()
+  import fys5429.style as style; style.apply()
 """
 
 import matplotlib as mpl

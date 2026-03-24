@@ -19,12 +19,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-import style  # noqa
+import fys5429.style as style  # noqa
 
-from utils       import set_seed
-from heston      import call_cos, surface as heston_surface
-from pinn_heston import HestonPINN
-from metrics     import summary
+from fys5429.utils       import set_seed
+from fys5429.heston      import call_cos, surface as heston_surface
+from fys5429.pinn_heston import HestonPINN
+from fys5429.metrics     import summary
 
 OUT = Path(__file__).parent.parent / "plots" / "pinn"
 OUT.mkdir(parents=True, exist_ok=True)

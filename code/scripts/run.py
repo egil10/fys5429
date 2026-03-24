@@ -9,13 +9,13 @@ import argparse
 import numpy as np
 from pathlib import Path
 
-from utils import set_seed
+from fys5429.utils import set_seed
 
 
 def _run_bs(args):
-    from pinn_bs import BSPINN
-    from bs import call as bs_call
-    from utils import plot_loss
+    from fys5429.pinn_bs import BSPINN
+    from fys5429.bs import call as bs_call
+    from fys5429.utils import plot_loss
 
     model = BSPINN(K=args.K, r=args.r, sig=args.sig)
     model.train(n_steps=args.steps, log=args.log)

@@ -44,9 +44,9 @@ def main():
     steps = str(args.steps)
 
     # Import pipelines (deferred so torch loads once in this process)
-    import pipeline           as pipe_bs
-    import pipeline_heston    as pipe_h
-    import pipeline_calibrate as pipe_cal
+    from fys5429 import pipeline as pipe_bs
+    from fys5429 import pipeline_heston as pipe_h
+    from fys5429 import pipeline_calibrate as pipe_cal
 
     runs = [
         ("pipeline",           pipe_bs,  ["--steps", steps]),

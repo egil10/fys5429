@@ -10,8 +10,8 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-import bs
-import heston as hs
+from fys5429 import bs
+from fys5429 import heston as hs
 
 
 OUTDIR = Path(__file__).resolve().parent.parent / "data" / "generated"

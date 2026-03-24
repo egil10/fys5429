@@ -5,7 +5,7 @@ Inverse problem: calibrate BS / Heston parameters from observed prices.
   Phase 4 (due May 23).
 
   Usage:
-    from calibrate import calibrate_bs, calibrate_heston
+    from fys5429.calibrate import calibrate_bs, calibrate_heston
 """
 
 import numpy as np
@@ -24,7 +24,7 @@ def calibrate_bs(prices, S, K, T, r):
     Returns:
         iv: implied volatility array, shape (n,)
     """
-    from bs import iv
+    from fys5429.bs import iv
     return np.array([iv(p, s, k, t, r)
                      for p, s, k, t in zip(prices, S, K, T)])
 
@@ -47,7 +47,7 @@ def calibrate_heston(prices, S, K, T, r,
     Returns:
         dict with keys v0, kappa, theta, xi, rho, mse, success
     """
-    from heston import call as heston_call
+    from fys5429.heston import call as heston_call
 
     def obj(params):
         v0, kappa, theta, xi, rho = params

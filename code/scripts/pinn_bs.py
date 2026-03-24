@@ -154,7 +154,7 @@ class BSPINN:
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
-    from bs import call as bs_call
+    from fys5429.bs import call as bs_call
 
     K, r, sig = 100.0, 0.05, 0.20
     model = BSPINN(K=K, r=r, sig=sig)

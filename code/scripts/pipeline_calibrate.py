@@ -16,10 +16,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
 
-import style  # noqa
+import fys5429.style as style  # noqa
 
-from calibrate import calibrate_bs
-from heston    import call as heston_call
+from fys5429.calibrate import calibrate_bs
+from fys5429.heston    import call as heston_call
 
 OUT = Path(__file__).parent.parent / "plots" / "calibrate"
 OUT.mkdir(parents=True, exist_ok=True)
