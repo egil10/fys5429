@@ -149,37 +149,3 @@ class BSPINN:
         self.history = ckpt.get("history", self.history)
         return self
 
-
-# ── demo ─────────────────────────────────────────────────────────────────────
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    from fys5429.bs import call as bs_call
-
-    K, r, sig = 100.0, 0.05, 0.20
-    model = BSPINN(K=K, r=r, sig=sig)
-    model.train(n_steps=5000, log=500)
-
-    S    = np.linspace(50, 200, 100)
-    tau  = 1.0
-    V_nn = model.predict(S, np.full_like(S, tau))
-    V_ex = bs_call(S, K, tau, r, sig)
-    rmse = np.sqrt(np.mean((V_nn - V_ex) ** 2))
-    print(f"\nRMSE vs analytical (τ=1): {rmse:.4f}")
-
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
-    ax1.plot(S, V_ex, "k-",  label="exact")
-    ax1.plot(S, V_nn, "r--", label="PINN")
-    ax1.set(xlabel="S", ylabel="V", title="BS PINN vs Exact  (τ=1)")
-    ax1.legend()
-
-    ax2.plot(S, V_nn - V_ex)
-    ax2.axhline(0, color="k", lw=0.5)
-    ax2.set(xlabel="S", ylabel="error", title="Pointwise Error")
-
-    plt.tight_layout()
-    out = Path(__file__).parent.parent / "plots" / "pinn" / "bs_pinn.pdf"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(out)
-    print(f"Saved → {out}")
-    plt.show()

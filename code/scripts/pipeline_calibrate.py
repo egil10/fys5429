@@ -129,16 +129,3 @@ def heston_calibration_pipeline(data_dir):
     plt.tight_layout()
     _savefig("calibrate_heston_params.pdf")
     plt.close()
-
-
-# ── Main ─────────────────────────────────────────────────────────────────────
-
-def main():
-    data_dir = Path(__file__).parent.parent / "data" / "generated"
-    bs_iv_pipeline(data_dir)
-    heston_calibration_pipeline(data_dir)
-    print(f"\nAll plots saved to {OUT}/")
-
-
-if __name__ == "__main__":
-    main()

@@ -13,7 +13,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-
 # ── Analytical BS Greeks ──────────────────────────────────────────────────────
 
 def bs_greeks(S, K, T, r, sig):
@@ -30,7 +29,6 @@ def bs_greeks(S, K, T, r, sig):
         theta = theta(S, K, T, r, sig, cp="call"),
         rho   = rho(S, K, T, r, sig,   cp="call"),
     )
-
 
 # ── Numerical Greeks (finite differences) ────────────────────────────────────
 
@@ -72,71 +70,3 @@ def pinn_gamma(model, S, tau):
     V_up = model.predict(S + eps, tau)
     V_dn = model.predict(S - eps, tau)
     return (V_up - 2 * V + V_dn) / eps**2
-
-
-# ── Plotting ─────────────────────────────────────────────────────────────────
-
-def plot_greeks(S, greeks: dict, title="BS Greeks", path=None):
-    """Panel plot of all provided Greeks vs S.
-
-    Args:
-        S: spot array
-        greeks: dict {name: array}
-        title: figure title
-        path: save path (optional)
-    """
-    n = len(greeks)
-    fig, axes = plt.subplots(1, n, figsize=(4 * n, 4))
-    if n == 1:
-        axes = [axes]
-    for ax, (name, vals) in zip(axes, greeks.items()):
-        ax.plot(S, vals)
-        ax.axhline(0, color="k", lw=0.5, ls="--")
-        ax.set(xlabel="S", title=name)
-    fig.suptitle(title)
-    plt.tight_layout()
-    if path:
-        Path(path).parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(path)
-    return fig, axes
-
-
-def compare_greeks(S, g_exact: dict, g_pinn: dict, path=None):
-    """Overlay exact vs PINN Greeks and show error.
-
-    Args:
-        S: spot array
-        g_exact, g_pinn: dicts {name: array} with the same keys
-    """
-    names = list(g_exact.keys())
-    fig, axes = plt.subplots(2, len(names), figsize=(4 * len(names), 6))
-    for j, name in enumerate(names):
-        axes[0, j].plot(S, g_exact[name], "k-",  label="exact")
-        axes[0, j].plot(S, g_pinn[name],  "r--", label="PINN")
-        axes[0, j].set(title=name)
-        axes[0, j].legend(fontsize=8)
-
-        axes[1, j].plot(S, g_pinn[name] - g_exact[name])
-        axes[1, j].axhline(0, color="k", lw=0.5)
-        axes[1, j].set(title=f"{name} error")
-
-    plt.tight_layout()
-    if path:
-        Path(path).parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(path)
-    return fig, axes
-
-
-# ── demo ─────────────────────────────────────────────────────────────────────
-
-if __name__ == "__main__":
-    K, r, sig, T = 100.0, 0.05, 0.20, 1.0
-    S = np.linspace(60, 160, 200)
-    g = bs_greeks(S, K, T, r, sig)
-
-    fig, axes = plot_greeks(S, g, title="Black-Scholes Greeks  (K=100, T=1, σ=0.20)")
-    out = Path(__file__).parent.parent / "plots" / "analytical" / "bs_greeks.pdf"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(out)
-    print(f"Saved → {out}")
-    plt.show()

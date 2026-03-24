@@ -1,3 +1,9 @@
+"""
+bm.py
+-----
+Geometric Brownian Motion.
+"""
+
 
 import numpy as np
 

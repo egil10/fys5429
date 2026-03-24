@@ -158,12 +158,3 @@ class HestonPINN:
         self.net.load_state_dict(ckpt["net"])
         self.history = ckpt.get("history", self.history)
         return self
-
-
-# ── demo ─────────────────────────────────────────────────────────────────────
-
-if __name__ == "__main__":
-    print("Heston PINN — Phase 3 (due May 9)")
-    model = HestonPINN()
-    print(f"  Network: {sum(p.numel() for p in model.net.parameters()):,} params")
-    print(f"  Device:  {model.device}")

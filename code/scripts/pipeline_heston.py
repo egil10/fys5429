@@ -134,25 +134,3 @@ def plot_loss(model):
     plt.tight_layout()
     _savefig("heston_loss.pdf")
     plt.close()
-
-
-def main():
-    p = argparse.ArgumentParser()
-    p.add_argument("--steps", type=int, default=5000)
-    p.add_argument("--seed",  type=int, default=42)
-    args = p.parse_args()
-
-    df    = load_data()
-    model = train(n_steps=args.steps, seed=args.seed)
-    evaluate(model, df)
-
-    print("\nSaving plots...")
-    plot_slices(model)
-    plot_surface_comparison(model)
-    plot_error_map(model)
-    plot_loss(model)
-    print(f"\nAll plots saved to {OUT}/")
-
-
-if __name__ == "__main__":
-    main()

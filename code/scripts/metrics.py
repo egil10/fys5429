@@ -5,7 +5,6 @@ Evaluation metrics for PINN validation.
 
 import numpy as np
 
-
 def rmse(pred, exact):
     """Root mean squared error."""
     return np.sqrt(np.mean((pred - exact) ** 2))
