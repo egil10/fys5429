@@ -50,4 +50,10 @@ All three terms computed via PyTorch autograd — no finite differences anywhere
 
 <br>
 
+## Plots
+
+All generated plots are available on [Google Drive](https://drive.google.com/drive/folders/19RfjIIXjkRNlbpGwZMm97BfQ5PnSgi0a?usp=sharing).
+
+<br>
+
 Department of Physics · University of Oslo
