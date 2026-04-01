@@ -11,18 +11,22 @@ def train_inv_pinn(S_in, v_in, tau_in,
                    r, K,
                    device,
                    lambda_pde, lambda_ic, lambda_bc, lambda_data, epochs,
-                   lr=5e-3, hidden_layers=3, neurons=256, activation='tanh',
+                   lr=5e-3, lr_heston=1e-3,
+                   lambda_feller=1.0,
+                   hidden_layers=3, neurons=256, activation='tanh',
                    kappa_init=1.0, theta_init=0.1, xi_init=0.5, rho_init=0.0):
 
     model = INVPINN(hidden_layers, neurons, activation=activation,
                     kappa_init=kappa_init, theta_init=theta_init,
                     xi_init=xi_init, rho_init=rho_init).to(device)
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+
+    # Use separate learning rates: slower for Heston params
+    optimizer = optim.Adam(model.param_groups(lr_nn=lr, lr_heston=lr_heston))
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-6)
 
     grad_ones = torch.ones_like(S_in)
     history = {
-        'epoch': [], 'pde': [], 'ic': [], 'bc': [], 'data': [], 'total': [],
+        'epoch': [], 'pde': [], 'ic': [], 'bc': [], 'data': [], 'feller': [], 'total': [],
         'kappa': [], 'theta': [], 'xi': [], 'rho': []
     }
     sample_interval = max(1, epochs // 100)
@@ -30,13 +34,13 @@ def train_inv_pinn(S_in, v_in, tau_in,
     for epoch in range(epochs):
         optimizer.zero_grad()
 
-        # Read trainable params from model
+        # Read trainable (constrained) params from model
         kappa = model.kappa
         theta = model.theta
         xi    = model.xi
         rho   = model.rho
 
-        # --- PDE residual (uses trainable params, not fixed ones!) ---
+        # --- PDE residual (uses trainable params) ---
         V_pred = model(S_in, v_in, tau_in)
 
         V_S   = torch.autograd.grad(V_pred, S_in,   grad_outputs=grad_ones, create_graph=True)[0]
@@ -66,12 +70,21 @@ def train_inv_pinn(S_in, v_in, tau_in,
         V_bc_pred = model(S_bc, v_bc, tau_bc)
         loss_bc = torch.mean((V_bc_pred - 0.0)**2)
 
-        # --- Data loss (NEW: fit to market observations) ---
+        # --- Data loss (fit to market observations) ---
         V_data_pred = model(S_data, v_data, tau_data)
         loss_data = torch.mean((V_data_pred - V_data)**2)
 
+        # --- Feller condition penalty: 2*kappa*theta > xi^2 ---
+        # Penalise violation of the Feller condition
+        feller_violation = torch.relu(xi**2 - 2.0 * kappa * theta)
+        loss_feller = feller_violation**2
+
         # --- Total loss ---
-        loss = lambda_pde * loss_pde + lambda_ic * loss_ic + lambda_bc * loss_bc + lambda_data * loss_data
+        loss = (lambda_pde * loss_pde
+                + lambda_ic * loss_ic
+                + lambda_bc * loss_bc
+                + lambda_data * loss_data
+                + lambda_feller * loss_feller)
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
@@ -83,6 +96,7 @@ def train_inv_pinn(S_in, v_in, tau_in,
             history['ic'].append(loss_ic.item())
             history['bc'].append(loss_bc.item())
             history['data'].append(loss_data.item())
+            history['feller'].append(loss_feller.item())
             history['total'].append(loss.item())
             history['kappa'].append(kappa.item())
             history['theta'].append(theta.item())
@@ -96,6 +110,7 @@ def train_inv_pinn(S_in, v_in, tau_in,
         'final_ic': loss_ic.item(),
         'final_bc': loss_bc.item(),
         'final_data': loss_data.item(),
+        'final_feller': loss_feller.item(),
         'final_total': loss.item(),
         'final_kappa': kappa.item(),
         'final_theta': theta.item(),
