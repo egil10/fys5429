@@ -74,14 +74,13 @@ def train_inv_pinn(S_in, v_in, tau_in,
         return loss, loss_pde, loss_ic, loss_bc, loss_data, loss_feller, kappa, theta, xi, rho
 
     def log_history(epoch_num):
-        with torch.no_grad():
-            loss, lp, lic, lbc, ldata, lf, k, t, x, r_corr = compute_loss()
-            history['epoch'].append(epoch_num)
-            history['pde'].append(lp.item()); history['ic'].append(lic.item())
-            history['bc'].append(lbc.item()); history['data'].append(ldata.item())
-            history['feller'].append(lf.item()); history['total'].append(loss.item())
-            history['kappa'].append(k.item()); history['theta'].append(t.item())
-            history['xi'].append(x.item()); history['rho'].append(r_corr.item())
+        loss, lp, lic, lbc, ldata, lf, k, t, x, r_corr = compute_loss()
+        history['epoch'].append(epoch_num)
+        history['pde'].append(lp.item()); history['ic'].append(lic.item())
+        history['bc'].append(lbc.item()); history['data'].append(ldata.item())
+        history['feller'].append(lf.item()); history['total'].append(loss.item())
+        history['kappa'].append(k.item()); history['theta'].append(t.item())
+        history['xi'].append(x.item()); history['rho'].append(r_corr.item())
 
     # =========================================================================
     # PHASE 1: ADAM (Broad Basin Search)
@@ -114,8 +113,7 @@ def train_inv_pinn(S_in, v_in, tau_in,
             log_history(epoch)
 
     # Grab final state to return
-    with torch.no_grad():
-        loss, lp, lic, lbc, ldata, lf, k, t, x, r_corr = compute_loss()
+    loss, lp, lic, lbc, ldata, lf, k, t, x, r_corr = compute_loss()
 
     return {
         'model': model,
