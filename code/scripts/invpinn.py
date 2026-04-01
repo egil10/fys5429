@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-class InvPINN(nn.Module):
+class INVPINN(nn.Module):
     def __init__(self, hidden_layers=3, neurons_per_layer=256,
                  S_scale=300.0, v_scale=1.0, tau_scale=1.0, activation='tanh',
                  kappa_init=1.0, theta_init=0.1, xi_init=0.5, rho_init=0.0):

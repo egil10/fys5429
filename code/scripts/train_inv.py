@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from invpinn import InvPINN
+from invpinn import INVPINN
 
 
 def train_inv_pinn(S_in, v_in, tau_in,
@@ -14,7 +14,7 @@ def train_inv_pinn(S_in, v_in, tau_in,
                    lr=5e-3, hidden_layers=3, neurons=256, activation='tanh',
                    kappa_init=1.0, theta_init=0.1, xi_init=0.5, rho_init=0.0):
 
-    model = InvPINN(hidden_layers, neurons, activation=activation,
+    model = INVPINN(hidden_layers, neurons, activation=activation,
                     kappa_init=kappa_init, theta_init=theta_init,
                     xi_init=xi_init, rho_init=rho_init).to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr)
