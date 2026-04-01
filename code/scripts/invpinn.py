@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+from activations import get_activation, init_weights  # <--- ADD THIS
 
 def _inv_softplus(x):
     """Inverse of softplus: y such that softplus(y) = x."""
@@ -50,16 +50,23 @@ class INVPINN(nn.Module):
         self._raw_rho = nn.Parameter(
             _inv_tanh(torch.tensor([rho_clamped])))
 
-        # ---------- network architecture (same as HSPINN) ----------
-        layers = [nn.Linear(3, neurons_per_layer),
-                  nn.Softplus() if activation == 'softplus' else nn.Tanh()]
+        # ---------- network architecture ----------
+        layers = [
+            nn.Linear(3, neurons_per_layer),
+            get_activation(activation)
+        ]
+        
         for _ in range(hidden_layers):
             layers.append(nn.Linear(neurons_per_layer, neurons_per_layer))
-            layers.append(nn.Softplus() if activation == 'softplus' else nn.Tanh())
+            layers.append(get_activation(activation))
+            
         layers.append(nn.Linear(neurons_per_layer, 1))
 
         self.net = nn.Sequential(*layers)
-        self._init_weights()
+        
+        # Initialize weights perfectly for whichever activation was chosen
+        for m in self.net.modules():
+            init_weights(m, activation)
 
     # ----- constrained properties -----
     @property
@@ -106,11 +113,6 @@ class INVPINN(nn.Module):
             {'params': heston_params, 'lr': lr_heston},
         ]
 
-    def _init_weights(self):
-        for m in self.net:
-            if isinstance(m, nn.Linear):
-                nn.init.xavier_normal_(m.weight)
-                nn.init.zeros_(m.bias)
 
     def forward(self, S, v, tau):
         S_norm = S / self.S_scale
