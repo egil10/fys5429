@@ -54,6 +54,9 @@ desktop.ini
 # LaTeX (synced elsewhere)
 .article/
 
+# Generated exports of notebooks + scripts (MD/HTML/PDF)
+code/exports/
+
 # Local-only (root); does not affect README.md or other paths
 /CLAUDE.md
 
